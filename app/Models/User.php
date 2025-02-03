@@ -4,15 +4,18 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Wildside\Userstamps\Userstamps;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable;
-
+    use HasApiTokens, HasFactory, Notifiable , HasRoles 
+    ,SoftDeletes,Userstamps ;
     /**
      * The attributes that are mass assignable.
      *
@@ -22,6 +25,16 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'last_name', 
+        'document', 
+        'mobile',            
+        'birth_date',
+        'gender',
+        'education',
+        'designation',
+        'address',
+        'specialty_id',
+        'avatar'
     ];
 
     /**
@@ -61,6 +74,13 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims()
     {
-        return [];
+        return []; // para guaradar datos en el payload
+    }
+
+    public function specialty(){
+        return $this->belongsTo(Specialty::class);
+    }
+    public function scheduleDays() {
+        return $this->hasMany(ScheduleDay::class);
     }
 }

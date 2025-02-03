@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 
- use Validator;
+//  use Validator;
  
  
 class AuthController extends Controller
@@ -30,7 +31,7 @@ class AuthController extends Controller
         $validator = Validator::make(request()->all(), [
             'name' => 'required',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:8', // 'required|confirmed|min:8'
+            'password' => 'required|min:8', // 'required|confirmed|min:8' campo compirmed_password
         ]);
  
         if($validator->fails()){
@@ -42,7 +43,7 @@ class AuthController extends Controller
         $user->email = request()->email;
         $user->password = bcrypt(request()->password);
         $user->save();
- 
+       
         return response()->json($user, 201);
     }
  
@@ -104,11 +105,24 @@ class AuthController extends Controller
      */
     protected function respondWithToken($token)
     {
+
+        $permissions = auth("api")->user()->getAllPermissions()->map(function($perm) {
+            return $perm->name;
+        });
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60 ,
-            'user' => auth('api')->user()
+            // 'user' => auth('api')->user()
+            "user" => [
+                "name" => auth('api')->user()->name,
+                "surname" => auth('api')->user()->surname,
+                // "avatar" => auth('api')->user()->avartar,
+                "email"=> auth('api')->user()->email,
+                "roles" => auth('api')->user()->getRoleNames(),
+                "permissions" => $permissions,
+            ],
+
         ]);
     }
 }
